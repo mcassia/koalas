@@ -1,6 +1,6 @@
-from types import FunctionType
-import json
 from itertools import product
+import json
+from types import FunctionType
 
 
 class DataFrame:
@@ -27,8 +27,10 @@ class DataFrame:
         self.rows = [tuple(row) for row in rows]
         self.fields = tuple(fields)
 
-    def __getitem__(self, index):
-        return DataFrame(fields=self.fields, rows=self.rows[index])
+    def __getitem__(self, obj):
+        if isinstance(obj, int):
+            return dict(zip(self.fields, self.rows[obj]))
+        return DataFrame(fields=self.fields, rows=self.rows[obj])
     
     def __iter__(self):
         return iter(self.to_records())
@@ -135,7 +137,7 @@ class DataFrame:
         left_fields = sorted(set(self.fields) - {field})
         right_fields = sorted(set(other.fields) - {field})
         if set(left_fields) & set(right_fields):
-            raise DataFrame('Joining is not possible because there are common fields.')
+            raise DataFrameException('Joining is not possible because there are common fields.')
         left, right = self.select(field, *left_fields), other.select(field, *right_fields)
         left_grouped, right_grouped = {}, {}
         for df, mapping in [(left, left_grouped), (right, right_grouped)]:
@@ -147,7 +149,7 @@ class DataFrame:
             fields=[field] + left_fields + right_fields,
             rows=[
                 (key, *a, *b)
-                for key in set(left_grouped) & set(right_grouped)
+                for key in sorted(set(left_grouped) & set(right_grouped))
                 for a, b in product(left_grouped[key], right_grouped[key])
             ]
         )        
@@ -201,11 +203,10 @@ class DataFrame:
         ------
             DataFrame        
         """
-        fields = sorted(fields)
-        indices = {self._get_field_index(field) for field in fields}
+        indices = [self._get_field_index(field) for field in fields]
         return DataFrame(
             fields=fields,
-            rows=[tuple(value for i, value in enumerate(row) if i in indices) for row in self.rows]
+            rows=[tuple(row[i] for i in indices) for row in self.rows]
         )
     
     def apply(self, field:str, fn:FunctionType, new:str=None) -> 'DataFrame':
