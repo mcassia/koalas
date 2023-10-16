@@ -4,7 +4,7 @@ In particular, it offers a limited, simple and intuitive set of operations for m
 
 The below is an extract from the carried example in `example.ipynb`:
 
-```
+```python
 from koalas import DataFrame
 from example import chess
 
