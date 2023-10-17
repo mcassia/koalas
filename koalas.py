@@ -5,6 +5,8 @@ from types import FunctionType
 
 class DataFrame:
 
+    """Class to represent, manipulate, inspect and export tabular data."""
+
     @staticmethod
     def from_records(records:list[dict[str, object]]) -> 'DataFrame':
         """
@@ -50,6 +52,16 @@ class DataFrame:
     
     def __eq__(self, other):
         return hash(self) == hash(other)
+    
+    def reverse(self) -> 'DataFrame':
+        """
+        Reverses the order of rows.
+
+        Return
+        ------
+            DataFrame
+        """
+        return DataFrame(fields=self.fields, rows=reversed(self.rows))
     
     def export(self, format:str, path:str, **kwargs) -> 'DataFrame':
         """
@@ -182,7 +194,7 @@ class DataFrame:
             ]
         )        
     
-    def sort(self, *fields:str, ascending:bool=True) -> 'DataFrame':
+    def sort(self, *fields:str) -> 'DataFrame':
         """
         Returns a DataFrame instance in which rows are sorted by the values for the given fields.
 
@@ -190,8 +202,6 @@ class DataFrame:
         ----------
             *fields: str
                 The fields to sort by.
-            ascending: bool (default: True)
-                Whether to sort in ascending or descending order.
 
         Return
         ------
@@ -200,7 +210,7 @@ class DataFrame:
         indices = [self._get_field_index(f) for f in fields]
         return DataFrame(
             fields=self.fields,
-            rows=sorted(self.rows, reverse=not ascending, key=lambda row: tuple(row[i] for i in indices))
+            rows=sorted(self.rows, key=lambda row: tuple(row[i] for i in indices))
         )
     
     def extract(self, field:str) -> list[object]:

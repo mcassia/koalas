@@ -21,7 +21,8 @@ def summary(df):
             .apply('Count', len, 'Outcome')
             .apply('Win Rate', lambda outcomes: outcomes.count('Win') / len(outcomes), 'Outcome')                
             .apply('Win Percentage', lambda rate: round(100. * rate, 2), 'Win Rate')
-            .sort('Win Percentage', ascending=False)
+            .sort('Win Percentage')
+            .reverse()
             .apply('Minimum', lambda count: count > 20, 'Count')
             .filter('Minimum', True)
             .select('Opening', 'Win Percentage')
@@ -47,6 +48,9 @@ comparison = (
     left
         .join(right, 'Opening')
         .apply('Difference', lambda a, b: round(b - a, 2), 'Win Percentage (Left)', 'Win Percentage (Right)')        
+        .export('csv', 'performance.csv') # will export to a .csv file
+        .sort('Difference')
+        .reverse()
 )
 comparison
 
