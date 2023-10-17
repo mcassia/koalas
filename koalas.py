@@ -154,14 +154,14 @@ class DataFrame:
             ]
         )        
     
-    def sort(self, field:str, ascending:bool=True) -> 'DataFrame':
+    def sort(self, *fields:str, ascending:bool=True) -> 'DataFrame':
         """
-        Returns a DataFrame instance in which rows are sorted by the values for the given field.
+        Returns a DataFrame instance in which rows are sorted by the values for the given fields.
 
         Parameters
         ----------
-            field: str
-                The field to sort by.
+            *fields: str
+                The fields to sort by.
             ascending: bool (default: True)
                 Whether to sort in ascending or descending order.
 
@@ -169,10 +169,10 @@ class DataFrame:
         ------
             DataFrame
         """
-        index = self._get_field_index(field)
+        indices = [self._get_field_index(f) for f in fields]
         return DataFrame(
             fields=self.fields,
-            rows=sorted(self.rows, reverse=not ascending, key=lambda row: row[index])
+            rows=sorted(self.rows, reverse=not ascending, key=lambda row: tuple(row[i] for i in indices))
         )
     
     def extract(self, field:str) -> list[object]:
