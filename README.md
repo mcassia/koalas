@@ -1,6 +1,8 @@
-Yet another DataFrame library, this time with a focus on simplicity and usability and not on performance (just like a koala: cute and slow).
+Yet another DataFrame library, this time with focus on simplicity and usability and not on performance (just like a koala: cute and slow).
 
 It offers a limited yet complete set of simple and intutive operations for manipulation and inspection of tabular data, with virtually no learning curve.
+
+It tries to be as Pythonic as possible and has a penchant for method chaining.
 
 The below is an extract from the carried example in `example.ipynb`:
 
