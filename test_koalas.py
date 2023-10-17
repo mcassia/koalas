@@ -85,16 +85,23 @@ class DataFrameTests(TestCase):
     def test_group(self):
         df = DataFrame.from_records(
             [
-                dict(Breed='Australian Shepherd', Age=4),
-                dict(Breed='Australian Shepherd', Age=6),
-                dict(Breed='Beagle', Age=2),
+                dict(Breed='Australian Shepherd', Age=4, Toy='Bunny'),
+                dict(Breed='Australian Shepherd', Age=6, Toy='Sheep'),
+                dict(Breed='Beagle', Age=4, Toy='Bunny'),
             ]
         )
         self.assertEqual(
             df.group('Breed').to_records(),
             [
-                dict(Breed='Australian Shepherd', Age=[4, 6]),
-                dict(Breed='Beagle', Age=[2]),
+                dict(Breed='Australian Shepherd', Age=[4, 6], Toy=['Bunny', 'Sheep']),
+                dict(Breed='Beagle', Age=[4], Toy=['Bunny']),
+            ]
+        )
+        self.assertEqual(
+            df.group('Age', 'Toy').to_records(),
+            [
+                dict(Age=4, Toy='Bunny', Breed=['Australian Shepherd', 'Beagle']),
+                dict(Age=6, Toy='Sheep', Breed=['Australian Shepherd']),
             ]
         )
         with self.assertRaises(DataFrameException):

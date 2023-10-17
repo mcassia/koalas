@@ -229,10 +229,13 @@ class DataFrame:
 
         Example
         -------
-            >>> df = DataFrame
-            ...     .from_records([dict(A=1, B=2), dict(A=3, B=4)])
-            ...     .apply('Average', lambda a, b: a + b / 2, 'A', 'B')
+            >>> df = (
+            ...     DataFrame
+            ...         .from_records([dict(A=1, B=2), dict(A=3, B=4)])
+            ...         .apply('Average', lambda a, b: a + b / 2, 'A', 'B')
+            ... )
             ...
+            >>> df
             A B Average
             - - -------
             1 2 1.5
@@ -245,32 +248,47 @@ class DataFrame:
 
         return DataFrame(fields=self.fields+(field,), rows=rows)
     
-    def group(self, field:str) -> 'DataFrame':
+    def group(self, *fields:str) -> 'DataFrame':
         """
-        Returns a DataFrame instance in which rows are grouped by values for the given field.
+        Returns a DataFrame instance in which rows are grouped by values for the given fields.
 
         Parameters
         ----------
-            field: str
-                The name of the field to group rows by.
+            *fields: str
+                The name of the fields to group rows by.
 
         Return
         ------
             DataFrame
+
+        Example
+        -------
+            >>> df = (
+            ...     DataFrame
+            ...         .from_records([dict(A=1, B=2, C=3), dict(A=1, B=2, C=4), dict(A=0, B=0, C=0)])
+            ...         .group('A', 'B')
+            ... )
+            ...
+            >>> df
+            A B C     
+            - - -     
+            0 0 [0]   
+            1 2 [3, 4]
         """
-        index = self._get_field_index(field)
+        key_indices = [self._get_field_index(f) for f in fields]
+        other_indices = [i for i in range(len(self.fields)) if i not in key_indices]
         grouped = {}
         for row in self.rows:
-            key  = row[index]
+            key  = tuple(row[i] for i in key_indices)
             if key not in grouped:
                 grouped[key] = [[] for _ in range(len(self.fields))]
             for i, value in enumerate(row):
                 grouped[key][i].append(value)
         return DataFrame(
-            fields=self.fields,
+            fields=tuple(fields) + tuple(f for f in self.fields if f not in fields),
             rows=[
-                row[:index] + [key] + row[index+1:]
-                for key, row in grouped.items()
+                (*key,) + tuple(row[i] for i in other_indices)
+                for key, row in sorted(grouped.items())
             ]
         )
 
