@@ -68,11 +68,6 @@ class DataFrameTests(TestCase):
             _ = left.join(right, 'Age')
         with self.assertRaises(DataFrameException):
             _ = left.join(right, 'Country')
-        with self.assertRaises(DataFrameException):
-            _ = left.join(
-                DataFrame.from_records([dict(Company='AnyCompany', Age=42)]),
-                'Company'
-            )
 
     def test_sort(self):
         records = [dict(Name='Jane', Age=43), dict(Name='Jean', Age=21)]

@@ -1,6 +1,7 @@
 from itertools import product
 import json
 from types import FunctionType
+from collections import defaultdict
 
 
 class DataFrame:
@@ -157,43 +158,39 @@ class DataFrame:
             rows=self.rows
         )
     
-    def join(self, other:'DataFrame', field:str) -> 'DataFrame':
+    def join(self, other:'DataFrame', *fields:str) -> 'DataFrame':
         """
-        Returns a DataFrame instance which is the result of the join of the current instance and
-        the given one on the given field. In particular, it performs a left, inner join and it
-        requires that the given field is present in both instances and that no other field is
-        shared between instances; if either condition is not met, an exception is raised.
+        Joins with the other DataFrame on the specified fields; in particular, it performs a left,
+        inner join.
 
-        Paramaters
+        Parameters
         ----------
             other: DataFrame
-                The other DataFrame to join the current with.
-            field: str
-                The shared field to join on.
+                The DataFrame to join with.
+            *fields: str
+                The common fields to join on.
 
         Return
         ------
             DataFrame
         """
-        if field not in self.fields or field not in other.fields:
-            raise DataFrameException("Joining on field cannot be performed because the field is not present in both tables.")
-        left_fields = sorted(set(self.fields) - {field})
-        right_fields = sorted(set(other.fields) - {field})
-        if set(left_fields) & set(right_fields):
-            raise DataFrameException('Joining is not possible because there are common fields.')
-        left, right = self.select(field, *left_fields), other.select(field, *right_fields)
-        left_grouped, right_grouped = {}, {}
-        for df, mapping in [(left, left_grouped), (right, right_grouped)]:
+        left_fields = [field for field in self.fields if not field in fields]
+        right_fields = [field for field in other.fields if not field in fields]
+        left, right = self.select(*fields, *left_fields), other.select(*fields, *right_fields)
+        common = set(left.fields) & set(right.fields) - set(fields)
+        for field in common: left = left.rename(field, f'{field} (1)')
+        for field in common: right = right.rename(field, f'{field} (2)')
+        grouped = defaultdict(lambda: [[], []])
+        for i, df in enumerate((left, right)):
             for row in df.rows:
-                if row[0] not in mapping:
-                    mapping[row[0]] = []
-                mapping[row[0]].append(row[1:])
+                key = row[:len(fields)]
+                grouped[key][i].append(row[len(fields):])
         return DataFrame(
-            fields=[field] + left_fields + right_fields,
+            fields=[*fields, *left.fields[len(fields):], *right.fields[len(fields):]],
             rows=[
-                (key, *a, *b)
-                for key in sorted(set(left_grouped) & set(right_grouped))
-                for a, b in product(left_grouped[key], right_grouped[key])
+                (*key, *a, *b)
+                for key in sorted(grouped)
+                for a, b in product(*grouped[key])
             ]
         )        
     
