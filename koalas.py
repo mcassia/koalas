@@ -50,6 +50,33 @@ class DataFrame:
     def __eq__(self, other):
         return hash(self) == hash(other)
     
+    def export(self, format, path, **kwargs):
+        """
+        Exports the DataFrame instance into a file with the specified format (one of 'csv', 'json'
+        or 'string').
+
+        Parameters
+        ----------
+            format: str
+                The output format (one of 'csv', 'json' or 'string').
+            path: str
+                The path where to write the contents to.
+            **kwargs
+                Optional arguments to be propagated to the function generating the contents.
+
+        Return
+        ------
+            DataFrame
+        """
+        f = getattr(self, f'to_{format}', None)
+        if not f:
+            raise DataFrameException(f'Exporting format "{format}" is not valid.')
+        text = f(**kwargs)
+        with open(path, 'w') as f:
+            f.write(text)
+            f.close()
+        return self
+    
     def to_csv(self) -> str:
         """
         Returns a CSV representation of the DataFrame.
