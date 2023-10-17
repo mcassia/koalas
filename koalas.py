@@ -108,7 +108,10 @@ class DataFrame:
         ------
             str
         """
+        maximum_length = 42 # TODO add configuration file
+        shorten = lambda text: text if len(str(text)) <= maximum_length else f'{str(text)[:maximum_length]}...'
         rows = [self.fields] + [['-'*len(field) for field in self.fields]] + self.rows
+        rows = [[shorten(value) for value in row] for row in rows]
         widths = [max(len(str(row[i])) for row in rows) for i in range(len(self.fields))]
         lines = [' '.join(str(value).ljust(width) for width, value in zip(widths, row)) for row in rows]
         return '\n'.join(lines)
