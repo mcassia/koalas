@@ -1,6 +1,6 @@
 Yet another DataFrame library, this time with a focus on simplicity and usability and not on performance (just like a koala: cute and slow).
 
-In particular, it offers a limited, simple and intuitive set of operations for manipulation and inspection of tabular data, with virtually no learning curve.
+It offers a limited yet complete set of simple and intutive operations for manipulation and inspection of tabular data, with virtually no learning curve.
 
 The below is an extract from the carried example in `example.ipynb`:
 
