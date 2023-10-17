@@ -117,21 +117,16 @@ class DataFrameTests(TestCase):
             ]
         )
         self.assertEqual(
-            df.apply('Revenue', lambda revenue: revenue // 1_000).to_records(),
-            [
-                dict(Name='AnyCompany', Revenue=1),
-                dict(Name='SomeCompany', Revenue=2),
-            ]
-        )
-        self.assertEqual(
-            df.apply('Revenue', lambda revenue: revenue // 1_000, 'RevenueThousands').to_records(),
+            df.apply('RevenueThousands', lambda revenue: revenue // 1_000, 'Revenue').to_records(),
             [
                 dict(Name='AnyCompany', Revenue=1_000, RevenueThousands=1),
                 dict(Name='SomeCompany', Revenue=2_000, RevenueThousands=2),
             ]
         )
+        with self.assertRaises(AssertionError):
+            _ = df.apply('Revenue', lambda revenue: revenue // 1_000, 'Revenue')
         with self.assertRaises(DataFrameException):
-            _ = df.apply('Location', lambda location: location.title())
+            _ = df.apply('TitledLocation', lambda location: location.title(), 'Location')
 
     def test_extract(self):
         df = DataFrame.from_records(

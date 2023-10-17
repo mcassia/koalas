@@ -209,37 +209,41 @@ class DataFrame:
             rows=[tuple(row[i] for i in indices) for row in self.rows]
         )
     
-    def apply(self, field:str, fn:FunctionType, new:str=None) -> 'DataFrame':
+    def apply(self, field:str, fn:FunctionType, *fields:str) -> 'DataFrame':
         """
-        Returns a DataFrame instance in which the given function is applied to rows for the given
-        field, either updating the value for the field or creating a new one, if a new field name
-        if specified.
+        Returns a DataFrame instance in which the given field is the result of the application of
+        the given function for the values in the given fields.
 
         Parameters
         ----------
             field: str
-                The name of the field the values of which will have the function applied to.
-            fn: function[object] -> object
-                The function to apply to each value for the given field.
-            new: str (default: None)
-                If specified, it is the name of the new field to be created for the results of the
-                applied function on the given field.
+                The name of the field to generate for the result of the application.
+            fn: function[*object] -> object
+                The function to apply.            
+            *fields: str
+                The names of the field the values of which will have the function applied to.
 
         Return
         ------
             DataFrame
+
+        Example
+        -------
+            >>> df = DataFrame
+            ...     .from_records([dict(A=1, B=2), dict(A=3, B=4)])
+            ...     .apply('Average', lambda a, b: a + b / 2, 'A', 'B')
+            ...
+            A B Average
+            - - -------
+            1 2 1.5
+            3 4 3.5
         """
 
-        index = self._get_field_index(field)
+        assert field not in self.fields
+        indices = [self._get_field_index(f) for f in fields]
+        rows = [(*row, fn(*(row[i] for i in indices))) for row in self.rows]
 
-        if new:
-            fields = [*self.fields, new]
-            rows = [(*row, fn(row[index])) for row in self.rows]
-        else:
-            fields = self.fields
-            rows = [(*row[:index], fn(row[index]), *row[index+1:]) for row in self.rows]
-
-        return DataFrame(fields=fields, rows=rows)
+        return DataFrame(fields=self.fields+(field,), rows=rows)
     
     def group(self, field:str) -> 'DataFrame':
         """
