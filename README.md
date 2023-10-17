@@ -15,33 +15,32 @@ df = DataFrame.from_records(list(chess('TineBerger', 2023, 10)))
 summary = (
     df
         .filter('Color', 'White')
-        .apply('Moves', lambda moves: ' '.join(moves[:4]))
-        .group('Moves')
-        .apply('Outcome', len, 'Count')
-        .apply('Outcome', lambda o: o.count('Win') / (o.count('Win') + o.count('Draw') + o.count('Lose')))                
-        .rename('Outcome', 'Win Rate')
-        .apply('Win Rate', lambda rate: round(100. * rate, 2))
-        .sort('Win Rate', False)
-        .apply('Count', lambda count: count > 25, 'Minimum')
+        .apply('Opening', lambda moves: ' '.join(moves[:4]), 'Moves')
+        .group('Opening')
+        .apply('Count', len, 'Outcome')
+        .apply('Win Rate', lambda outcomes: outcomes.count('Win') / len(outcomes), 'Outcome')                
+        .apply('Win Percentage', lambda rate: round(100. * rate, 2), 'Win Rate')
+        .sort('Win Percentage', False)
+        .apply('Minimum', lambda count: count > 25, 'Count')
         .filter('Minimum', True)
-        .select('Moves', 'Win Rate', 'Count')
+        .select('Opening', 'Win Percentage', 'Count')
 )
 ```
 
 the resulting `summary` is then represented as:
 
 ```
-Moves                          Win Rate Count
------                          -------- -----
-1. Nc3 1... Nf6 2. e4 2... d6  67.44    43   
-1. Nc3 1... d5 2. e4 2... d4   58.96    173  
-1. Nc3 1... Nf6 2. e4 2... e5  55.74    61   
-1. Nc3 1... Nf6 2. e4 2... g6  54.84    31   
-1. Nc3 1... e5 2. e4 2... Nf6  51.79    56   
-1. Nc3 1... g6 2. e4 2... Bg7  50.0     56   
-1. Nc3 1... c6 2. e4 2... d5   48.15    54   
-1. Nc3 1... d5 2. e4 2... dxe4 47.54    61   
-1. Nc3 1... c5 2. e4 2... Nc6  43.18    44   
-1. Nc3 1... e6 2. e4 2... d5   39.47    38   
-1. Nc3 1... e5 2. e4 2... Nc6  34.55    55   
+Opening                        Win Percentage Count
+-------                        -------------- -----
+1. Nc3 1... Nf6 2. e4 2... d6  64.58          48   
+1. Nc3 1... d5 2. e4 2... d4   58.01          181  
+1. Nc3 1... Nf6 2. e4 2... e5  57.58          66   
+1. Nc3 1... Nf6 2. e4 2... g6  53.12          32   
+1. Nc3 1... g6 2. e4 2... Bg7  50.85          59   
+1. Nc3 1... d5 2. e4 2... dxe4 50.0           64   
+1. Nc3 1... e5 2. e4 2... Nf6  50.0           62   
+1. Nc3 1... c6 2. e4 2... d5   45.61          57   
+1. Nc3 1... c5 2. e4 2... Nc6  44.68          47   
+1. Nc3 1... e6 2. e4 2... d5   39.47          38   
+1. Nc3 1... e5 2. e4 2... Nc6  36.21          58   
 ```
