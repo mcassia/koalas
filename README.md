@@ -9,38 +9,49 @@ from koalas import DataFrame
 from example import chess
 
 # Fetches results of chess games played on chess.com for the given player and period
-df = DataFrame.from_records(list(chess('TineBerger', 2023, 10)))
+df = DataFrame.from_records(chess('TineBerger', 2023, 9))
 
-# Identifies which openings are most and least successful when playing as white.
-summary = (
-    df
-        .filter('Color', 'White')
-        .apply('Opening', lambda moves: ' '.join(moves[:4]), 'Moves')
-        .group('Opening')
-        .apply('Count', len, 'Outcome')
-        .apply('Win Rate', lambda outcomes: outcomes.count('Win') / len(outcomes), 'Outcome')                
-        .apply('Win Percentage', lambda rate: round(100. * rate, 2), 'Win Rate')
-        .sort('Win Percentage', False)
-        .apply('Minimum', lambda count: count > 25, 'Count')
-        .filter('Minimum', True)
-        .select('Opening', 'Win Percentage', 'Count')
+# Identifies which openings are most and least successful when playing as black.
+def summary(df):
+    return (
+        df
+            .filter('Color', 'Black')
+            .apply('Opening', lambda moves: ' '.join(moves[:1]), 'Moves')
+            .group('Opening')
+            .apply('Count', len, 'Outcome')
+            .apply('Win Rate', lambda outcomes: outcomes.count('Win') / len(outcomes), 'Outcome')                
+            .apply('Win Percentage', lambda rate: round(100. * rate, 2), 'Win Rate')
+            .sort('Win Percentage', ascending=False)
+            .apply('Minimum', lambda count: count > 20, 'Count')
+            .filter('Minimum', True)
+            .select('Opening', 'Win Percentage')
+    )
+
+summary(df)
+
+# Opening Win Percentage
+# ------- --------------
+# 1. e3   50.0          
+# 1. e4   48.58         
+# 1. d4   45.6          
+# 1. Nf3  39.13         
+# 1. c4   36.17      
+
+# Compare opening performance against another player
+left = df
+right = DataFrame.from_records(chess('architecturalpain', 2023, 9))
+
+left = summary(left).rename('Win Percentage', 'Win Percentage (Left)')
+right = summary(right).rename('Win Percentage', 'Win Percentage (Right)')
+comparison = (
+    left
+        .join(right, 'Opening')
+        .apply('Difference', lambda a, b: round(b - a, 2), 'Win Percentage (Left)', 'Win Percentage (Right)')        
 )
-```
+comparison
 
-the resulting `summary` is then represented as:
-
-```
-Opening                        Win Percentage Count
--------                        -------------- -----
-1. Nc3 1... Nf6 2. e4 2... d6  64.58          48   
-1. Nc3 1... d5 2. e4 2... d4   58.01          181  
-1. Nc3 1... Nf6 2. e4 2... e5  57.58          66   
-1. Nc3 1... Nf6 2. e4 2... g6  53.12          32   
-1. Nc3 1... g6 2. e4 2... Bg7  50.85          59   
-1. Nc3 1... d5 2. e4 2... dxe4 50.0           64   
-1. Nc3 1... e5 2. e4 2... Nf6  50.0           62   
-1. Nc3 1... c6 2. e4 2... d5   45.61          57   
-1. Nc3 1... c5 2. e4 2... Nc6  44.68          47   
-1. Nc3 1... e6 2. e4 2... d5   39.47          38   
-1. Nc3 1... e5 2. e4 2... Nc6  36.21          58   
+# Opening Win Percentage (Left) Win Percentage (Right) Difference
+# ------- --------------------- ---------------------- ----------
+# 1. d4   45.6                  51.4                   5.8       
+# 1. e4   48.58                 50.2                   1.62      
 ```

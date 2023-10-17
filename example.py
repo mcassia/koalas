@@ -31,7 +31,7 @@ def chess(player:str, year:int, month:int):
             }
     """    
     games = requests.get(
-        f'https://api.chess.com/pub/player/{player}/games/{str(year)}/{str(month).ljust(2, "0")}',
+        f'https://api.chess.com/pub/player/{player}/games/{str(year)}/{str(month).rjust(2, "0")}',
         headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36'}
     ).json()['games']
     moves_pattern = re.compile(r'[0-9]+[\.]+ [0-9A-Za-z-#+=]+')

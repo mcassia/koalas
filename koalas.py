@@ -19,6 +19,7 @@ class DataFrame:
         ------
             DataFrame
         """
+        records = list(records)
         fields = sorted({key for record in records for key in record})
         rows = [tuple(record.get(field) for field in fields) for record in records]
         return DataFrame(fields=fields, rows=rows)
@@ -50,7 +51,7 @@ class DataFrame:
     def __eq__(self, other):
         return hash(self) == hash(other)
     
-    def export(self, format, path, **kwargs):
+    def export(self, format:str, path:str, **kwargs) -> 'DataFrame':
         """
         Exports the DataFrame instance into a file with the specified format (one of 'csv', 'json'
         or 'string').
