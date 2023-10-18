@@ -137,6 +137,37 @@ class DataFrame:
         """
         return json.dumps(self.to_records(), indent=4)
     
+    def log(self, label=None) -> 'DataFrame':
+        """
+        Prints the string representation of the DataFrame and returns it. This is intended as a
+        logging utility in the context of extensive method chaining.
+
+        Parameters
+        ----------
+            label: str (default: None)
+                An optional label to preprend to the log message.
+
+        Return
+        ------
+            DataFrame
+
+        Example
+        -------
+            >>> df = (
+            ...     df.
+            ...         .filter('Hero', 'Luke')
+            ...         .group('YearABY')
+            ...         .log()
+            ...         .apply('SithLords', lambda names: sum('Darth' in name for name in names), 'Opponent')
+            ...         .select('YearABY', 'SithLords')
+            ...         .sort('YearABY')
+            ... )
+        """
+        if label:
+            print(label)
+        print(self)
+        return self
+    
     def rename(self, field:str, new:str) -> 'DataFrame':
         """
         Renames the given field with the given name.
