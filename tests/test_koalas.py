@@ -1,5 +1,5 @@
 from unittest import TestCase
-from koalas import DataFrame, DataFrameException
+from koalas.koalas import DataFrame, DataFrameException
 
 
 class DataFrameTests(TestCase):
